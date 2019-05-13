@@ -30,8 +30,9 @@ def get_image_url(image_num):
     response = requests.get(url)
     if response.ok:
         image_url = response.json()['img']
-        return image_url
+        image_alt = response.json()['alt']
+        return image_url, image_alt
 
 
 if __name__ == '__main__':
-    get_image(get_image_url(614))
+    get_image(get_image_url(615)[0])
