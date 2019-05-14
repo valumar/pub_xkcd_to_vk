@@ -1,18 +1,17 @@
 import logging
 import os
 import random
-import pathlib
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-IMAGE_FOLDER = 'images'
+
 base_api_url = "https://api.vk.com/method/"
 
 logging.basicConfig(
     format='%(levelname)-8s [%(asctime)s] %(message)s',
     level=logging.DEBUG,
-    # filename='log.log'
+    filename='log.log'
 )
 
 
