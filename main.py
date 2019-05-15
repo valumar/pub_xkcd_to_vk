@@ -3,6 +3,7 @@ import os
 import random
 import requests
 from dotenv import load_dotenv
+from pprint import pprint
 
 load_dotenv()
 
@@ -105,27 +106,40 @@ def post_photo(data):
     try:
         response = requests.post(f"{base_api_url}{api_method}", params=payload)
         response.raise_for_status()
-        return response.json()
+        return response
     except Exception:
         logging.exception("Exception in `post_photo`")
 
 
-if __name__ == '__main__':
+def get_posted_pics():
     try:
         with open('posted_pics.txt', 'r', encoding='utf8') as f:
             posted_pics = set(f.read().splitlines())
     except FileNotFoundError:
         logging.exception('`posted_pics.txt` not found')
         posted_pics = set()
+    return posted_pics
 
-    last_image_num = get_last_image_num()
-    not_posted_images = set(range(1, last_image_num + 1)) - posted_pics
-    image_num = random.choice(list(not_posted_images))
 
-    image = get_image(get_image_url(image_num)[0])
-    upload_url = get_upload_url(os.getenv("VK_GROUP_ID"))
-    upload = upload_photo(image, upload_url)
-    save = save_photo(upload)
-    post = post_photo(save)
+def write_posted_pic(image_num):
     with open('posted_pics.txt', 'a', encoding='utf8') as f:
         f.write(f"{image_num}\n")
+
+
+def get_random_image_num():
+    last_image_num = get_last_image_num()
+    not_posted_images = set(range(1, last_image_num + 1)) - get_posted_pics()
+    return random.choice(list(not_posted_images))
+
+
+def main():
+    image_num = get_random_image_num()
+    image = get_image(get_image_url(image_num)[0])
+    upload = upload_photo(image, get_upload_url(os.getenv("VK_GROUP_ID")))
+    save = save_photo(upload)
+    if post_photo(save).ok:
+        write_posted_pic(image_num)
+
+
+if __name__ == '__main__':
+    main()
