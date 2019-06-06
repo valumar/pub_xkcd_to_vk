@@ -11,7 +11,7 @@ base_api_url = "https://api.vk.com/method/"
 logging.basicConfig(
     format='%(levelname)-8s [%(asctime)s] %(message)s',
     level=logging.DEBUG,
-    filename='log.log'
+    # filename='log.log'
 )
 
 
@@ -53,7 +53,7 @@ def get_upload_url(group_id):
         response.raise_for_status()
         return response.json()["response"]["upload_url"]
     except Exception:
-        logging.exception("Exception in `get_upload_url`")
+        logging.exception(f"Exception in `get_upload_url`:\n {response.json()}")
 
 
 def upload_photo(image, upload_url):
@@ -87,7 +87,7 @@ def save_photo(data):
         logging.exception("Exception in `save_photo`")
 
 
-def post_photo(data):
+def post_photo(data, image_alt):
 
     group_id = os.getenv("VK_GROUP_ID")
     media_id = data["response"][0]["id"]
@@ -100,7 +100,7 @@ def post_photo(data):
         "owner_id": - int(group_id),
         "from_group": 1,
         "attachments": f"photo{owner_id}_{media_id}",
-        "message": f"{get_image_url(image_num)[1]}"
+        "message": f"{image_alt}"
     }
     try:
         response = requests.post(f"{base_api_url}{api_method}", params=payload)
@@ -134,9 +134,10 @@ def get_random_image_num():
 def main():
     image_num = get_random_image_num()
     image = get_image(get_image_url(image_num)[0])
+    image_alt = get_image_url(image_num)[1]
     upload = upload_photo(image, get_upload_url(os.getenv("VK_GROUP_ID")))
     save = save_photo(upload)
-    if post_photo(save).ok:
+    if post_photo(save, image_alt).ok:
         write_posted_pic(image_num)
 
 
